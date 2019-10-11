@@ -3,6 +3,7 @@ import os
 import scrapy
 import random
 from urllib.parse import urljoin
+from scrapy_splash import SplashRequest
 
 from IPC.items import IPCItem
 
@@ -12,6 +13,13 @@ class CategorySpider(scrapy.Spider):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.script = """
+        function main(splash, args)
+            assert(splash:go(args.url))
+            assert(splash:wait(args.wait))
+            return splash:html()
+        end
+        """
         self.base_url = 'http://www.soopat.com/IPC/Parent/'
 
     def start_requests(self):
@@ -23,12 +31,14 @@ class CategorySpider(scrapy.Spider):
                 'max_retry_times': self.crawler.settings.get('MAX_RETRY_TIMES'),
                 'path': path
             }
-            yield scrapy.Request(url, callback=self.parse, meta=meta)
+            yield self._create_request(url, meta)
 
     def parse(self, response):
         parents, children = self._parse(response)
+        # 当解析失败的时候，不再执行后续操作
         if len(parents) == 0 or len(children) == 0:
             yield response.request
+            return
         # 前缀
         index, prefix = 1, parents[-1]['code']
         while index < len(parents):
@@ -65,7 +75,7 @@ class CategorySpider(scrapy.Spider):
             'path': response.meta['path']
         }
         for url in urls:
-            yield scrapy.Request(url, callback=self.parse, meta=meta)
+            yield self._create_request(url, meta)
 
     def _parse(self, response):
         """
@@ -78,7 +88,9 @@ class CategorySpider(scrapy.Spider):
         try:
             table = response.css('table.IPCTable')[1]
         except Exception as e:
-            self.logger.error('解析失败: %s' % e)
+            self.logger.error('解析%s失败: %s' % (response.url, e))
+            # with open('1.html', 'wb') as fp:
+            #    fp.write(response.body)
             return parents, children
 
         tr_parents = table.xpath('.//tr[@class="IPCParentRow"]')
@@ -103,3 +115,11 @@ class CategorySpider(scrapy.Spider):
                 children.append({'code': code, 'title': title})
 
         return parents, children
+
+    def _create_request(self, url, meta):
+        args = {
+            'wait': random.randint(3, 6),
+            'lua_source': self.script,
+        }
+        return SplashRequest(url, callback=self.parse, endpoint='execute',
+                             meta=meta, args=args)

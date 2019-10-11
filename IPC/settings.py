@@ -25,11 +25,25 @@ ROBOTSTXT_OBEY = False
 MAX_RETRY_TIMES = 20
 BASEDIR = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 BASEDIR = os.path.join(BASEDIR, 'files')
+# 配置Splash
+SPLASH_URL = 'http://47.107.246.172:8050'
+# 去重
+DUPEFILTER_CLASS = 'scrapy_splash.SplashAwareDupeFilter'
+# 配置Cache存储
+HTTPCACHE_STORAGE = 'scrapy_splash.SplashAwareFSCacheStorage'
+
+SPIDER_MIDDLEWARES = {
+    'scrapy_splash.SplashDeduplicateArgsMiddleware': 100
+}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'IPC.middlewares.GetFromLocalityMiddleware': 543,
+    'IPC.middlewares.RandomUserAgentMiddleware': 544,
+    'scrapy_splash.SplashCookiesMiddleware': 723,
+    'scrapy_splash.SplashMiddleware': 725,
+    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
     'IPC.middlewares.ProxyMiddleware': 843,
 }
 
