@@ -38,6 +38,8 @@ class GetFromLocalityMiddleware(object):
         path = request.meta['path']
         # 该路径存在该文件
         filepath = os.path.join(path, filename)
+        # 是否从本地文件夹获取到的文件
+        request.meta['loaded_from_locality'] = os.path.exists(filepath)
         if os.path.exists(filepath):
             fp = open(filepath, 'rb')
             bytes = fp.read()

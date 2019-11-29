@@ -56,6 +56,9 @@ class JsonPipeline(object):
 class SavePagePipeline(object):
     def process_item(self, item, spider):
         response = item['response']
+        # 从本地加载，则不操作
+        if response.meta['loaded_from_locality']:
+            return item
 
         path = response.meta['path']
         code = item['code']
