@@ -10,8 +10,8 @@ import scrapy
 
 class IPCItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
     code = scrapy.Field()
     title = scrapy.Field()
     children = scrapy.Field()
+    ancestors = scrapy.Field()
     response = scrapy.Field()

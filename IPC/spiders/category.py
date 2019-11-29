@@ -55,6 +55,7 @@ class CategorySpider(scrapy.Spider):
         else:
             item['code'] = prefix
         item['title'] = parents[-1]['title']
+        item['ancestors'] = parents[:-1]
         item['children'] = []
         item['response'] = response
 
