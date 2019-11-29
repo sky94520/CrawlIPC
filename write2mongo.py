@@ -3,6 +3,25 @@ import json
 import pymongo
 
 
+def browse_tree(root):
+    stack = [root]
+    array = []
+
+    while len(stack) != 0:
+        top = stack[0]
+        stack.pop(0)
+        datum = {'code': top['code'], 'title': top['title'], 'children': []}
+
+        for child in top['children']:
+            datum['children'].append(child['code'])
+            stack.append(child)
+
+        if len(datum['children']) == 0:
+            del datum['children']
+        array.append(datum)
+    return array
+
+
 if __name__ == '__main__':
     fp = open('categories.json', 'r', encoding='utf-8')
     json_data = json.loads(fp.read())
@@ -13,11 +32,9 @@ if __name__ == '__main__':
     db.authenticate(name=MONGODB_CONFIG['username'], password=MONGODB_CONFIG['password'])
     db = mongo['patent']
     # 专利数据集合
-    collection = db['ipc_category']
+    collection = db['hownet_category']
 
-    for child in json_data:
-        if 'children'
-
-    collection.insert_many(json_data)
-
-
+    for root in json_data:
+        items = browse_tree(root)
+        print(items)
+        # collection.insert_many(items)
