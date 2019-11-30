@@ -34,32 +34,37 @@ class CategorySpider(scrapy.Spider):
             yield self._create_request(url, meta)
 
     def parse(self, response):
-        parents, children = self._parse(response)
+        # 访问到此页面，提取出祖先和孩子
+        ancestors, children = self._parse(response)
         # 当解析失败的时候，不再执行后续操作
-        if len(parents) == 0 or len(children) == 0:
+        if len(ancestors) == 0 or len(children) == 0:
             yield response.request
             return
         # 前缀
-        index, prefix = 1, parents[-1]['code']
-        while index < len(parents):
-            front = parents[index - 1]['code']
-            back = parents[index]['code']
+        index, prefix = 1, ancestors[-1]['code']
+        while index < len(ancestors):
+            front = ancestors[index - 1]['code']
+            back = ancestors[index]['code']
             if front != back[:len(front)]:
                 prefix = front
                 break
             index += 1
         # TODO:第一次进入时的赋值 其他则是重复赋值
         item = IPCItem()
-        if prefix != parents[-1]['code']:
-            item['code'] = '%s%s' % (prefix, parents[-1]['code'])
+        if prefix != ancestors[-1]['code']:
+            item['code'] = '%s%s' % (prefix, ancestors[-1]['code'])
         else:
             item['code'] = prefix
-        item['title'] = parents[-1]['title']
+        item['title'] = ancestors[-1]['title']
         item['children'] = []
         item['response'] = response
-
-        urls = []
+        # 祖先
+        for node in ancestors:
+            min_len = min(len(prefix), len(node['code']))
+            if prefix[:min_len] != node['code'][:min_len]:
+                node['code'] = '%s%s' % (prefix, node['code'])
         # 为子孩子添加前缀
+        urls = []
         for child in children:
             min_len = min(len(prefix), len(child['code']))
             if prefix[:min_len] != child['code'][:min_len]:
@@ -70,12 +75,7 @@ class CategorySpider(scrapy.Spider):
             if link:
                 del child['url']
                 urls.append(link)
-        # 父亲
-        for node in parents:
-            min_len = min(len(prefix), len(node['code']))
-            if prefix[:min_len] != node['code'][:min_len]:
-                node['code'] = '%s%s' % (prefix, node['code'])
-        item['ancestors'] = parents[:-1]
+        item['ancestors'] = ancestors[:-1]
         yield item
         meta = {
             'max_retry_times': self.crawler.settings.get('MAX_RETRY_TIMES'),
@@ -86,11 +86,11 @@ class CategorySpider(scrapy.Spider):
 
     def _parse(self, response):
         """
-        解析response并得到parents children
+        解析response并得到ancestors children
         :param response:
         :return:
         """
-        parents, children = [], []
+        ancestors, children = [], []
         # 得到的为code title url
         try:
             table = response.css('table.IPCTable')[1]
@@ -98,16 +98,16 @@ class CategorySpider(scrapy.Spider):
             self.logger.error('解析%s失败: %s' % (response.url, e))
             # with open('1.html', 'wb') as fp:
             #    fp.write(response.body)
-            return parents, children
+            return ancestors, children
 
-        tr_parents = table.xpath('.//tr[@class="IPCParentRow"]')
+        tr_ancestors = table.xpath('.//tr[@class="IPCParentRow"]')
         tr_children = table.xpath('.//tr[@class="IPCContentRow"]')
 
-        for tr in tr_parents:
+        for tr in tr_ancestors:
             code = tr.css('td.IPCCode a::text').extract_first()
             title = tr.css('td.IPCContent a::text').extract_first()
 
-            parents.append({'code': code, 'title': title})
+            ancestors.append({'code': code, 'title': title})
 
         for tr in tr_children:
             url = tr.css('td.IPCContent a::attr(href)').extract_first()
@@ -121,7 +121,7 @@ class CategorySpider(scrapy.Spider):
                 title = tr.css('td.IPCContent::text').extract_first()
                 children.append({'code': code, 'title': title})
 
-        return parents, children
+        return ancestors, children
 
     def _create_request(self, url, meta):
         args = {

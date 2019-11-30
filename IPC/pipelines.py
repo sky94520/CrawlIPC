@@ -39,11 +39,16 @@ class JsonPipeline(object):
         # 统一处理
         items = item['children']
         items.insert(0, item)
+        ancestors = [] if 'ancestors' not in item else item['ancestors'][:]
+        ancestors.append({'code': item['code'], 'title': item['title']})
         # 添加或更新
         for child in items:
             code = child['code']
             datum = self.categories.get(code, {})
             datum.update(child)
+            # 为子孩子添加祖先
+            if 'ancestors' not in datum:
+                datum['ancestors'] = ancestors
             self.categories[code] = datum
         items.pop(0)
         return item

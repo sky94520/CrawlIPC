@@ -15,9 +15,8 @@ BOT_NAME = 'IPC'
 SPIDER_MODULES = ['IPC.spiders']
 NEWSPIDER_MODULE = 'IPC.spiders'
 
-
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'IPC (+http://www.yourdomain.com)'
+# USER_AGENT = 'IPC (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
