@@ -55,11 +55,11 @@ class CategorySpider(scrapy.Spider):
         else:
             item['code'] = prefix
         item['title'] = parents[-1]['title']
-        item['ancestors'] = parents[:-1]
         item['children'] = []
         item['response'] = response
 
         urls = []
+        # 为子孩子添加前缀
         for child in children:
             min_len = min(len(prefix), len(child['code']))
             if prefix[:min_len] != child['code'][:min_len]:
@@ -70,6 +70,12 @@ class CategorySpider(scrapy.Spider):
             if link:
                 del child['url']
                 urls.append(link)
+        # 父亲
+        for node in parents:
+            min_len = min(len(prefix), len(node['code']))
+            if prefix[:min_len] != node['code'][:min_len]:
+                node['code'] = '%s%s' % (prefix, node['code'])
+        item['ancestors'] = parents[:-1]
         yield item
         meta = {
             'max_retry_times': self.crawler.settings.get('MAX_RETRY_TIMES'),
