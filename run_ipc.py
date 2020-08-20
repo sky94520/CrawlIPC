@@ -5,7 +5,7 @@ from scrapy.crawler import CrawlerProcess
 
 def run():
     # 爬取使用的spider名称
-    spider_name = 'category'
+    spider_name = 'incopat'
     project_settings = get_project_settings()
     settings = dict(project_settings.copy())
     # 合并配置

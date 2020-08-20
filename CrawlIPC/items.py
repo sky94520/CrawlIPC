@@ -14,4 +14,5 @@ class IPCItem(scrapy.Item):
     code = scrapy.Field()
     title = scrapy.Field()
     children = scrapy.Field()
+    # Response
     response = scrapy.Field()

@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
+"""
+目前未维护
+"""
 import os
 import scrapy
-import random
 from urllib.parse import urljoin
 
-from IPC.items import IPCItem
+from CrawlIPC.items import IPCItem
 
 
-class CategorySpider(scrapy.Spider):
-    name = 'category'
+class SoopatSpider(scrapy.Spider):
+    name = 'soopat'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

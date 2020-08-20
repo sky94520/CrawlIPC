@@ -56,15 +56,16 @@ class JsonPipeline(object):
 class SavePagePipeline(object):
     def process_item(self, item, spider):
         response = item['response']
-
+        # 确定文件名称
         path = response.meta['path']
         code = item['code']
         code = re.sub('/', '-', code)
-
+        suffix = 'html' if 'suffix' not in response.meta else response.meta['suffix']
+        # 创建文件夹
         if not os.path.exists(path):
             os.makedirs(path)
 
-        filename = os.path.join(path, '%s.html' % code)
+        filename = os.path.join(path, '%s.%s' % (code, suffix))
         with open(filename, "wb") as fp:
             fp.write(response.body)
         return item
