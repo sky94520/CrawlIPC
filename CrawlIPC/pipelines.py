@@ -30,7 +30,6 @@ class FilterPipeline(object):
 
 
 class JsonPipeline(object):
-
     def __init__(self):
         # 互斥
         self.categories = {}

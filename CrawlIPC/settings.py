@@ -26,10 +26,15 @@ BASEDIR = os.path.realpath(os.path.dirname(os.path.dirname(__file__)))
 BASEDIR = os.path.join(BASEDIR, 'files')
 INCOPAT_DIR = os.path.join(BASEDIR, 'json')
 
+# 默认下载延迟[0.5 * delay, 1.5 * delay] => [0.25, 0.75]
+DOWNLOAD_DELAY = 0.25
+RANDOMIZE_DOWNLOAD_DELAY = True
+
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     'CrawlIPC.middlewares.GetFromLocalityMiddleware': 543,
+    'CrawlIPC.middlewares.RetryOrErrorMiddleware': 550,
     'CrawlIPC.middlewares.ProxyMiddleware': 843,
 }
 

@@ -6,6 +6,7 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 import os
+import re
 import time
 import logging
 from scrapy.exceptions import IgnoreRequest
@@ -28,7 +29,8 @@ class GetFromLocalityMiddleware(object):
         """
         url = request.url
         # 获取code
-        code, suffix = url.split('/')[-1], request.meta['suffix']
+        code, suffix = request.meta['code'], request.meta['suffix']
+        code = re.sub('/', '-', code)
         filename = '%s.%s' % (code, suffix)
         # 文件存放位置
         path = request.meta['path']
